@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics,serializers
 from rest_framework.response import Response
 from .models import Account
+from .serializers import AccountSerializer
 
 @csrf_exempt
 def import_accounts(request):
@@ -32,3 +33,12 @@ def import_accounts(request):
             raise serializers.ValidationError('No CSV file provided.')
     else:
         return HttpResponse('Invalid request method.')
+
+class AccountListView(generics.ListAPIView):
+    queryset = Account.objects.all()
+    serializer_class = AccountSerializer
+
+class AccountRetrieveView(generics.RetrieveAPIView):
+    queryset = Account.objects.all()
+    serializer_class = AccountSerializer
+    lookup_field = 'id'
