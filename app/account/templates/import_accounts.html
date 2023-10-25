@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Import Accounts</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/import_accounts.css' %}">
+</head>
+<body>
+    <h1>Import Accounts</h1>
+    {% if error_message %}
+    <div class="centered-message error-message" id = "error-message">
+        {{ error_message }}
+    </div>
+    {% endif %}
+    
+    {% if success_message %}
+    <div class="centered-message success-message" id="success-message">
+        {{ success_message }}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="accounts_file">Choose a CSV file to upload:</label>
+        <input type="file" name="accounts_file" id="accounts_file" required>
+        <button type="submit">Upload</button>
+    </form>
+</body>
+</html>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Function to hide the success message after a specific time
+    setTimeout(function() {
+        var successMessage = document.getElementById('success-message');
+        var errorMessage = document.getElementById('error-message');
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+        if (errorMessage) {
+            errorMessage.style.display = 'none';
+        }
+    }, 3000); // Adjust the time (in milliseconds) to hide the div after 3 seconds
+</script>
+{% endblock %}
