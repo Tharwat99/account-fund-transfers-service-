@@ -8,8 +8,8 @@ body {
 h1 {
     background-color: #007bff;
     color: white;
-    padding: 5px;
     text-align: center;
+    
 }
 
 .success-message {

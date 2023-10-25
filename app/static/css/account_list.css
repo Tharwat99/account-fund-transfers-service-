@@ -1,0 +1,64 @@
+.account-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.account-table th, .account-table td {
+    padding: 5px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.account-table th {
+    background-color: #050e18;
+    color: white;
+}
+
+.account-table td {
+    background-color: #f5f5f5;
+}
+
+.account-table tr:nth-child(even) {
+    background-color: #e0e0e0;
+}
+
+.account-table tr:hover {
+    background-color: #d3d3d3;
+}
+
+.pagination {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.pagination-link {
+    text-decoration: none;
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    border: 1px solid #007bff;
+    border-radius: 3px;
+    margin: 0 5px;
+}
+
+.pagination-link:hover {
+    background-color: #0056b3;
+}
+
+.current-page {
+    font-weight: bold;
+    margin: 0 10px;
+}
+
+.step-links {
+    display: flex;
+    align-items: center;
+}
+
+.no-accounts{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

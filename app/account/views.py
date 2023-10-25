@@ -3,14 +3,17 @@ import csv
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
-from rest_framework import generics,serializers
+from django.core.paginator import Paginator
 from django.db.utils import IntegrityError
+from rest_framework import generics,serializers
 from .models import Account
 from .serializers import AccountSerializer
+
 
 @csrf_exempt
 def import_accounts(request):
     if request.method == 'GET':
+        # Render template form for import accounts file
         return render(request, 'import_accounts.html')
     if request.method == 'POST':
         accounts_file = request.FILES.get('accounts_file')
@@ -41,9 +44,27 @@ def import_accounts(request):
     else:
         return HttpResponse('Invalid request method.')
 
-class AccountListView(generics.ListAPIView):
-    queryset = Account.objects.all()
-    serializer_class = AccountSerializer
+def account_list(request):
+    # Get all accounts
+    all_accounts = Account.objects.all()
+
+    # Set the number of accounts to display per page
+    per_page = 10  # Adjust this value as needed
+
+    # Create a Paginator instance
+    paginator = Paginator(all_accounts, per_page)
+
+    # Get the current page number from the request's GET parameters
+    page = request.GET.get('page')
+
+    # Get the accounts for the current page
+    accounts = paginator.get_page(page)
+
+    return render(request, 'account_list.html', {'accounts': accounts})
+
+# class AccountListView(generics.ListAPIView):
+#     queryset = Account.objects.all()
+#     serializer_class = AccountSerializer
 
 class AccountRetrieveView(generics.RetrieveAPIView):
     queryset = Account.objects.all()

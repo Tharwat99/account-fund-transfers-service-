@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block title %}List Accounts{% endblock %}
+{% block head %} 
+    <link rel="stylesheet" type="text/css" href="{% static 'css/account_list.css' %}">
+{% endblock %}
+{% block content %}
+    <h1>List Accounts</h1>
+    {% if accounts %}
+    
+        <table class="account-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in accounts %}
+                    <tr>
+                        <td>{{ account.id }}</td>
+                        <td>{{ account.name }}</td>
+                        <td>${{ account.balance }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <span class="step-links">
+                {% if accounts.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ accounts.previous_page_number }}">previous</a>
+                {% endif %}
+                
+                <span class="current-page">
+                    Page {{ accounts.number }} of {{ accounts.paginator.num_pages }}.
+                </span>
+                
+                {% if accounts.has_next %}
+                    <a href="?page={{ accounts.next_page_number }}">next</a>
+                    <a href="?page={{ accounts.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    {% else %}
+        <p class = 'no-accounts'>No records to show.</p>
+    {% endif %}    
+{% endblock %}

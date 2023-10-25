@@ -1,21 +1,19 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block content %}
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Import Accounts</title>
+
+{% block title %}Import Accounts{% endblock %}
+{% block head %} 
     <link rel="stylesheet" type="text/css" href="{% static 'css/import_accounts.css' %}">
-</head>
-<body>
+{% endblock %}
+{% block content %}
+
     <h1>Import Accounts</h1>
     {% if error_message %}
     <div class="centered-message error-message" id = "error-message">
         {{ error_message }}
     </div>
     {% endif %}
-    
+
     {% if success_message %}
     <div class="centered-message success-message" id="success-message">
         {{ success_message }}
@@ -28,8 +26,6 @@
         <input type="file" name="accounts_file" id="accounts_file" required>
         <button type="submit">Upload</button>
     </form>
-</body>
-</html>
 {% endblock %}
 
 {% block extra_scripts %}
