@@ -1,5 +1,7 @@
-from django.http import HttpResponse, JsonResponse
+from decimal import Decimal
 import csv
+from django.http import HttpResponse, JsonResponse
+
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics,serializers
 from rest_framework.response import Response
@@ -42,3 +44,27 @@ class AccountRetrieveView(generics.RetrieveAPIView):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
     lookup_field = 'id'
+
+@csrf_exempt
+def transfer_funds(request):
+    if request.method == 'POST':
+        source_account_id = request.POST.get('source_account_id')
+        target_account_id = request.POST.get('target_account_id')
+        amount = Decimal(request.POST.get('amount'))
+        
+        try:
+            source_account = Account.objects.get(id=source_account_id)
+            target_account = Account.objects.get(id=target_account_id)
+            
+            if source_account.balance >= amount:
+                source_account.balance -= amount
+                target_account.balance += amount
+                source_account.save()
+                target_account.save()
+                return HttpResponse('Funds transferred successfully.')
+            else:
+                return HttpResponse('Insufficient balance in the source account.')
+        except Account.DoesNotExist:
+            return HttpResponse('Invalid account ID.')
+    else:
+        return HttpResponse('Invalid request method.')
