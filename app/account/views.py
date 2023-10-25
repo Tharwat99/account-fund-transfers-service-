@@ -62,15 +62,6 @@ def account_list(request):
 
     return render(request, 'account_list.html', {'accounts': accounts})
 
-# class AccountListView(generics.ListAPIView):
-#     queryset = Account.objects.all()
-#     serializer_class = AccountSerializer
-
-class AccountRetrieveView(generics.RetrieveAPIView):
-    queryset = Account.objects.all()
-    serializer_class = AccountSerializer
-    lookup_field = 'id'
-
 @csrf_exempt
 def transfer_funds(request):
     if request.method == 'POST':
@@ -94,3 +85,12 @@ def transfer_funds(request):
             return HttpResponse('Invalid account ID.')
     else:
         return HttpResponse('Invalid request method.')
+
+# class AccountListView(generics.ListAPIView):
+#     queryset = Account.objects.all()
+#     serializer_class = AccountSerializer
+
+# class AccountRetrieveView(generics.RetrieveAPIView):
+#     queryset = Account.objects.all()
+#     serializer_class = AccountSerializer
+#     lookup_field = 'id'
