@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import AccountsFileUploadView
+from .views import import_accounts
 
 urlpatterns = [
     # Other URL patterns
-    path('upload-accounts-file', AccountsFileUploadView.as_view(), name='upload-accounts-file'),
+    path('accounts/import', import_accounts, name='accounts-import-file'),
 ]
