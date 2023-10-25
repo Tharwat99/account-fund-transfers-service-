@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Account Details</h1>
+    <p>Name: {{ account.name }}</p>
+    <p>Balance: ${{ account.balance }}</p>
+    
+    <h2>Transfer Money</h2>
+    <form method="post" action="{% url 'transfer_funds' %}">
+        {% csrf_token %}
+        <input type="hidden" name="source_account_id" value="{{ account.id }}">
+        <label for="recipient_account">Recipient:</label>
+        <select name="target_account_id" id="recipient_account">
+            {% for recipient in accounts %}
+                <option value="{{ recipient.id }}">{{ recipient.name }}</option>
+            {% endfor %}
+        </select>
+        <label for="amount">Amount:</label>
+        <input type="number" name="amount" id="amount" step="0.01" min="0" max="1000">
+        <button type="submit">Transfer</button>
+    </form>
+</div>
+{% endblock %}
