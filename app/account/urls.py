@@ -7,7 +7,7 @@ urlpatterns = [
     path('accounts', account_list, name='list_accounts'),
     path('account/<uuid:id>/', get_account_details, name='get_account'),   
     path('transfer', transfer_funds, name='transfer_funds'),
-    path('api/accounts/import', ImportAccountsView.as_view()),
+    path('api/accounts/import', ImportAccountsView.as_view(), name='import_accounts_api'),
     path('api/accounts', AccountListView.as_view()),
     path('api/account/<uuid:id>/', AccountRetrieveView.as_view()),
     path('api/transfer', TransferFundsView.as_view())
