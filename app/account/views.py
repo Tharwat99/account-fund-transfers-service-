@@ -52,7 +52,7 @@ def import_accounts(request):
 @api_view(['GET'])
 def account_list(request):
     # Get all accounts
-    all_accounts = Account.objects.all()
+    all_accounts = Account.objects.all().order_by('id')
 
     # Set the number of accounts to display per page
     per_page = 10  # Adjust this value as needed
