@@ -1,15 +1,13 @@
 from decimal import Decimal
 import csv
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
 from django.db.utils import IntegrityError
 from django.urls import reverse
-from rest_framework import generics,serializers
 from rest_framework.decorators import api_view
-from .models import Account
-from .serializers import AccountSerializer
+from ..models import Account
 
 @api_view(['GET', 'POST'])
 def import_accounts(request):
@@ -98,12 +96,3 @@ def transfer_funds(request):
         error_message = "Error: Invalid account ID."
         return render(request, 'import_accounts.html', {'error_message': error_message})
    
-
-# class AccountListView(generics.ListAPIView):
-#     queryset = Account.objects.all()
-#     serializer_class = AccountSerializer
-
-# class AccountRetrieveView(generics.RetrieveAPIView):
-#     queryset = Account.objects.all()
-#     serializer_class = AccountSerializer
-#     lookup_field = 'id'
