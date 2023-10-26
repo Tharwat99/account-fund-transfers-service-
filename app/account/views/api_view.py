@@ -3,7 +3,7 @@ from django.db.utils import IntegrityError
 from rest_framework import generics, status
 from rest_framework.response import Response
 from ..models import Account
-from ..serializers import AccountSerializer, ImportAccountsSerializer
+from ..serializers import AccountSerializer, ImportAccountsSerializer, TransferFundsSerializer
 from ..paginations import ListAccountsPagination
 
 class ImportAccountsView(generics.GenericAPIView):
@@ -39,7 +39,32 @@ class AccountListView(generics.ListAPIView):
     serializer_class = AccountSerializer
     pagination_class = ListAccountsPagination
 
-# class AccountRetrieveView(generics.RetrieveAPIView):
-#     queryset = Account.objects.all()
-#     serializer_class = AccountSerializer
-#     lookup_field = 'id'
+class AccountRetrieveView(generics.RetrieveAPIView):
+    queryset = Account.objects.all()
+    serializer_class = AccountSerializer
+    lookup_field = 'id'
+
+class TransferFundsView(generics.CreateAPIView):
+    serializer_class = TransferFundsSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        source_account_id = serializer.validated_data['source_account_id']
+        target_account_id = serializer.validated_data['target_account_id']
+        amount = serializer.validated_data['amount']
+
+        try:
+            source_account = Account.objects.get(id=source_account_id)
+            target_account = Account.objects.get(id=target_account_id)
+            if source_account.balance >= amount:
+                source_account.balance -= amount
+                target_account.balance += amount
+                source_account.save()
+                target_account.save()
+                return Response({'message': 'Funds transferred successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'Insufficient balance in the source account'}, status=status.HTTP_400_BAD_REQUEST)
+        except Account.DoesNotExist:
+            return Response({'error': 'Invalid account ID'}, status=status.HTTP_400_BAD_REQUEST)
