@@ -4,6 +4,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from ..models import Account
 from ..serializers import AccountSerializer, ImportAccountsSerializer
+from ..paginations import ListAccountsPagination
 
 class ImportAccountsView(generics.GenericAPIView):
     serializer_class = ImportAccountsSerializer
@@ -33,9 +34,10 @@ class ImportAccountsView(generics.GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class AccountListView(generics.ListAPIView):
-#     queryset = Account.objects.all()
-#     serializer_class = AccountSerializer
+class AccountListView(generics.ListAPIView):
+    queryset = Account.objects.all().order_by('-id')
+    serializer_class = AccountSerializer
+    pagination_class = ListAccountsPagination
 
 # class AccountRetrieveView(generics.RetrieveAPIView):
 #     queryset = Account.objects.all()
