@@ -54,3 +54,60 @@ class WebViewTestCase(TestCase):
         self.assertEqual(account.id, returned_account.id)
         self.assertEqual(account.name, returned_account.name)
         self.assertEqual(account.balance, returned_account.balance)
+
+    def test_transfer_funds_success(self):
+        source_account = Account.objects.create(id=uuid.uuid4(), name="Source Account", balance=1000.0)
+        target_account = Account.objects.create(id=uuid.uuid4(), name="Target Account", balance=500.0)
+
+        post_data = {
+            'source_account_id': source_account.id,
+            'target_account_id': target_account.id,
+            'amount': 500.0
+        }
+
+        url = reverse('transfer_funds')  # Replace with the actual URL name
+
+        response = self.client.post(url, post_data)
+
+        self.assertEqual(response.url, reverse('get_account', args=[source_account.id]))
+
+        # Verify that the balances have been updated
+        source_account.refresh_from_db()
+        target_account.refresh_from_db()
+        self.assertEqual(source_account.balance, 500.0)  
+        self.assertEqual(target_account.balance, 1000.0) 
+
+    def test_transfer_funds_insufficient_balance(self):
+        source_account = Account.objects.create(id=uuid.uuid4(), name="Source Account", balance=300.0)
+        target_account = Account.objects.create(id=uuid.uuid4(), name="Target Account", balance=1000.0)
+
+        post_data = {
+            'source_account_id': source_account.id,
+            'target_account_id': target_account.id,
+            'amount': 450.0  # Amount greater than the source account's balance
+        }
+
+        url = reverse('transfer_funds')
+
+        response = self.client.post(url, post_data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Insufficient balance in the source account")
+    
+    def test_transfer_funds_invalid_account(self):
+        target_account = Account.objects.create(id=uuid.uuid4(), name="Target Account", balance=1000.0)
+
+        post_data = {
+            'source_account_id': uuid.uuid4(),  # An ID that doesn't exist
+            'target_account_id': target_account.id,
+            'amount': 300.0
+        }
+
+        url = reverse('transfer_funds') 
+
+        response = self.client.post(url, post_data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Invalid account ID")
+
+ 
