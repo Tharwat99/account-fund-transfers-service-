@@ -110,4 +110,66 @@ class WebViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Invalid account ID")
 
+    
+    def test_transfer_funds_success(self):
+        source_account = Account.objects.create(id=uuid.uuid4(), name='Source Account', balance=100.0)
+        target_account = Account.objects.create(id=uuid.uuid4(), name='Target Account', balance=50.0)
+
+        url = reverse('transfer_funds_api')
+
+        data = {
+            'source_account_id': source_account.id,
+            'target_account_id': target_account.id,
+            'amount': 30.0,
+        }
+
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        # Reload the accounts from the database
+        source_account.refresh_from_db()
+        target_account.refresh_from_db()
+
+        self.assertEqual(source_account.balance, 70.0)
+        self.assertEqual(target_account.balance, 80.0)
+
+    def test_transfer_funds_insufficient_balance(self):
+        
+        source_account = Account.objects.create(id=uuid.uuid4(), name='Source Account', balance=100.0)
+        target_account = Account.objects.create(id=uuid.uuid4(), name='Target Account', balance=50.0)
+
+        url = reverse('transfer_funds_api')
+
+        data = {
+            'source_account_id': source_account.id,
+            'target_account_id': target_account.id,
+            'amount': 200.0,
+        }
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, 400)
+
+        # Reload the accounts from the database
+        source_account.refresh_from_db()
+
+        # Check that the source account balance remains unchanged
+        self.assertEqual(source_account.balance, 100.0)
+
+    def test_transfer_funds_invalid_account(self):
+        source_account = Account.objects.create(id=uuid.uuid4(), name='Source Account', balance=100.0)
+        target_account = Account.objects.create(id=uuid.uuid4(), name='Target Account', balance=50.0)
+
+        url = reverse('transfer_funds_api')
+
+        data = {
+            'source_account_id': uuid.uuid4(),
+            'target_account_id': target_account.id,
+            'amount': 200.0,
+        }
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, 400)
+
  

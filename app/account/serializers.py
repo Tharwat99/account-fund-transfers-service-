@@ -10,6 +10,6 @@ class ImportAccountsSerializer(serializers.Serializer):
     accounts_file = serializers.FileField()
 
 class TransferFundsSerializer(serializers.Serializer):
-    source_account_id = serializers.IntegerField()
-    target_account_id = serializers.IntegerField()
+    source_account_id = serializers.UUIDField()
+    target_account_id = serializers.UUIDField()
     amount = serializers.DecimalField(max_digits=10, decimal_places=2)
