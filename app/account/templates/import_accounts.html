@@ -8,18 +8,6 @@
 {% block content %}
 
     <h1>Import Accounts</h1>
-    {% if error_message %}
-    <div class="centered-message error-message" id = "error-message">
-        {{ error_message }}
-    </div>
-    {% endif %}
-
-    {% if success_message %}
-    <div class="centered-message success-message" id="success-message">
-        {{ success_message }}
-    </div>
-    {% endif %}
-
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <label for="accounts_file">Choose a CSV file to upload:</label>

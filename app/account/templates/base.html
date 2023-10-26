@@ -33,6 +33,18 @@
     </nav>
     
     <div class="container-fluid" style="margin-top:80px; margin-bottom:40px">
+    {% if error_message %}
+    <div class="centered-message error-message" id = "error-message">
+        {{ error_message }}
+    </div>
+    {% endif %}
+
+    {% if success_message %}
+    <div class="centered-message success-message" id="success-message">
+        {{ success_message }}
+    </div>
+    {% endif %}
+
       {% block content %}{% endblock %}
     </div>
     

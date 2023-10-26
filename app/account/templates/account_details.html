@@ -4,7 +4,7 @@
     <h1>Account Details</h1>
     <p>Name: {{ account.name }}</p>
     <p>Balance: ${{ account.balance }}</p>
-    
+    {% if enable %}
     <h2>Transfer Money</h2>
     <form method="post" action="{% url 'transfer_funds' %}">
         {% csrf_token %}
@@ -16,8 +16,9 @@
             {% endfor %}
         </select>
         <label for="amount">Amount:</label>
-        <input type="number" name="amount" id="amount" step="0.01" min="0" max="1000">
+        <input type="number" name="amount" id="amount" step="100" min="0" max=max_amount>
         <button type="submit">Transfer</button>
     </form>
+    {% endif %}
 </div>
 {% endblock %}

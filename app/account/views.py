@@ -1,16 +1,17 @@
 from decimal import Decimal
 import csv
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.db.utils import IntegrityError
+from django.urls import reverse
 from rest_framework import generics,serializers
+from rest_framework.decorators import api_view
 from .models import Account
 from .serializers import AccountSerializer
 
-
-@csrf_exempt
+@api_view(['GET', 'POST'])
 def import_accounts(request):
     if request.method == 'GET':
         # Render template form for import accounts file
@@ -21,7 +22,8 @@ def import_accounts(request):
         if accounts_file:
             # Read the CSV file
             if not accounts_file.name.endswith('.csv'):
-                return render(request, 'import_accounts.html', {'error_message': "Error: Invalid file type. Please upload a CSV file"})
+                error_message = "Error: Invalid file type. Please upload a CSV file."
+                return render(request, 'import_accounts.html', {'error_message': error_message})
 
             reader = csv.DictReader(accounts_file.read().decode('utf-8').splitlines())
             accounts = []
@@ -37,14 +39,17 @@ def import_accounts(request):
                 # Handle the IntegrityError
                 error_message = "Error: some records already exists."
                 return render(request, 'import_accounts.html', {'error_message': error_message})
-        
-            return render(request, 'import_accounts.html', {'success_message': "Success: The records inserted sucessfully."})
+            success_message = "Success: The records inserted sucessfully."
+            return render(request, 'import_accounts.html', {'success_message': success_message})
         
         else:
-            raise serializers.ValidationError('No CSV file provided.')
+            error_message = "Error: No CSV file provided."
+            return render(request, 'import_accounts.html', {'error_message': error_message})
     else:
-        return HttpResponse('Invalid request method.')
+        error_message = "Error: No CSV file provided."
+        return render(request, 'import_accounts.html', {'error_message': error_message})
 
+@api_view(['GET'])
 def account_list(request):
     # Get all accounts
     all_accounts = Account.objects.all()
@@ -63,34 +68,36 @@ def account_list(request):
 
     return render(request, 'account_list.html', {'accounts': accounts})
 
+@api_view(['GET'])
 def get_account_details(request, id):
     account = get_object_or_404(Account, id=id)
-    accounts = Account.objects.exclude(id=id)  # Exclude the current user's account
-    return render(request, 'account_details.html', {'account': account, 'accounts':accounts})
+    accounts = Account.objects.exclude(id=id) 
+    enable = account.balance > 0
+    max_amount = account.balance
+    return render(request, 'account_details.html', {'account': account, 'accounts':accounts, 'max_amount':max_amount, 'enable':enable})
 
+@api_view(['POST'])
 @csrf_exempt
 def transfer_funds(request):
-    if request.method == 'POST':
-        source_account_id = request.POST.get('source_account_id')
-        target_account_id = request.POST.get('target_account_id')
-        amount = Decimal(request.POST.get('amount'))
-        try:
-            accounts = Account.objects.exclude(id=source_account_id)  # Exclude the current user's account
-            source_account = Account.objects.get(id=source_account_id)
-            target_account = Account.objects.get(id=target_account_id)
-            
-            if source_account.balance >= amount:
-                source_account.balance -= amount
-                target_account.balance += amount
-                source_account.save()
-                target_account.save()
-                return render(request, 'account_details.html', {'account': source_account, 'accounts':accounts})
-            else:
-                return HttpResponse('Insufficient balance in the source account.')
-        except Account.DoesNotExist:
-            return HttpResponse('Invalid account ID.')
-    else:
-        return HttpResponse('Invalid request method.')
+    source_account_id = request.POST.get('source_account_id')
+    target_account_id = request.POST.get('target_account_id')
+    amount = Decimal(request.POST.get('amount'))
+    try:
+        source_account = Account.objects.get(id=source_account_id)
+        target_account = Account.objects.get(id=target_account_id)
+        if source_account.balance >= amount:
+            source_account.balance -= amount
+            target_account.balance += amount
+            source_account.save()
+            target_account.save()
+            return HttpResponseRedirect(reverse('get_account', args=[source_account.id]))
+        else:
+            error_message = "Error: Insufficient balance in the source account."
+            return render(request, 'import_accounts.html', {'error_message': error_message})
+    except Account.DoesNotExist:
+        error_message = "Error: Invalid account ID."
+        return render(request, 'import_accounts.html', {'error_message': error_message})
+   
 
 # class AccountListView(generics.ListAPIView):
 #     queryset = Account.objects.all()
