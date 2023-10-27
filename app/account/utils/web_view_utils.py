@@ -1,6 +1,7 @@
 import csv
 import openpyxl
 import json
+import uuid
 from ..models import Account
 
 def handle_csv_file(accounts_file):
@@ -12,7 +13,7 @@ def handle_csv_file(accounts_file):
     reader = csv.DictReader(accounts_file.read().decode('utf-8').splitlines())
     
     for row in reader:
-        if not row['ID'] not in accounts_ids:
+        if uuid.UUID(row['ID']) not in accounts_ids:
             account = Account(id=row['ID'], name=row['Name'], balance=float(row['Balance']))
             accounts.append(account)
             inserted_records+=1
@@ -35,9 +36,8 @@ def handle_xls_file(accounts_file):
         if is_header:
             is_header = False  # Skip the first row (header)
             continue  # Skip processing this row
-        
-        if not row[0] not in accounts_ids:
-            account = Account(id=row[0], name=row[1], balance=float(row[1]))
+        if uuid.UUID(row[0]) not in accounts_ids:
+            account = Account(id=row[0], name=row[1], balance=float(row[2]))
             accounts.append(account)
             inserted_records+=1
         else:
@@ -54,7 +54,7 @@ def handle_json_file(accounts_file):
     records = json.loads(data)
    
     for record in records:
-        if not record['ID'] not in accounts_ids:
+        if uuid.UUID(record['ID']) not in accounts_ids:
             account = Account(id=record['ID'], name=record['Name'], balance=float(record['Balance']))
             accounts.append(account)
             inserted_records+=1
