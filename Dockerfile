@@ -10,3 +10,6 @@ RUN mkdir /app
 WORKDIR /app
 COPY ./app /app
 
+EXPOSE 8000
+
+CMD python manage.py runserver
