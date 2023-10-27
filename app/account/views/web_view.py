@@ -1,15 +1,15 @@
 from decimal import Decimal
-import csv
+
 import openpyxl
 import json
 from django.http import HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
-from django.db.utils import IntegrityError
 from django.urls import reverse
 from rest_framework.decorators import api_view
 from ..models import Account
+from ..utils.web_view_utils import handle_csv_file, handle_xls_file, handle_json_file
 
 
 
@@ -22,62 +22,32 @@ def import_accounts(request):
     if request.method == 'POST':
         accounts_file = request.FILES.get('accounts_file')
         if accounts_file:
-            # Check the file extension
             if accounts_file.name.endswith('.csv'):
-                reader = csv.DictReader(accounts_file.read().decode('utf-8').splitlines())
-                accounts = []
-                
-                # Process each row in the CSV file
-                for row in reader:
-                    # Create an Account object from each row
-                    account = Account(id=row['ID'], name=row['Name'], balance=float(row['Balance']))
-                    accounts.append(account)
-                try:    
+                try:
+                    accounts, inserted_records, exists_records = handle_csv_file(accounts_file)
                     Account.objects.bulk_create(accounts)
-                except IntegrityError as e:
-                    # Handle the IntegrityError
-                    error_message = "Error: some records already exist."
+                    success_message = f"{inserted_records} records inserted successfully {exists_records} exists failed."
+                    return render(request, 'import_accounts.html', {'success_message': success_message})
+                except Exception as e:
+                    error_message = "Error: " + str(e)
                     return render(request, 'import_accounts.html', {'error_message': error_message})
-                success_message = "Success: The records inserted successfully."
-                return render(request, 'import_accounts.html', {'success_message': success_message})
-            
             elif accounts_file.name.endswith('.xls') or accounts_file.name.endswith('.xlsx'):
                 try:
-                    wb = openpyxl.load_workbook(accounts_file)
-                    sheet = wb.active  # Assuming you're working with the active sheet
-
-                    accounts = []
-                    is_header = True  # Flag to skip the first row (header)
-
-                    for row in sheet.iter_rows(values_only=True):
-                        if is_header:
-                            is_header = False  # Skip the first row (header)
-                            continue  # Skip processing this row
-                        # Assuming the first column is 'ID', the second is 'Name', and the third is 'Balance'
-                        account = Account(id=row[0], name=row[1], balance=float(row[2]))
-                        accounts.append(account)
-
+                    accounts, inserted_records, exists_records = handle_xls_file(accounts_file)
                     Account.objects.bulk_create(accounts)
-                    success_message = "Success: The records inserted successfully."
+                    success_message = f"{inserted_records} records inserted successfully {exists_records} exists failed."
                     return render(request, 'import_accounts.html', {'success_message': success_message})
+            
                 except Exception as e:
                     # Handle any exceptions, such as IntegrityError or file format issues
                     error_message = "Error: " + str(e)
                     return render(request, 'import_accounts.html', {'error_message': error_message})
             
             elif accounts_file.name.endswith('.json'):
-                # Read a JSON file
-                data = accounts_file.read().decode('utf-8')
                 try:
-                    records = json.loads(data)
-                    accounts = []
-
-                    for record in records:
-                        account = Account(id=record['ID'], name=record['Name'], balance=float(record['Balance']))
-                        accounts.append(account)
-
+                    accounts, inserted_records, exists_records = handle_json_file(accounts_file)
                     Account.objects.bulk_create(accounts)
-                    success_message = "Success: The records inserted successfully."
+                    success_message = f"{inserted_records} records inserted successfully {exists_records} exists failed."
                     return render(request, 'import_accounts.html', {'success_message': success_message})
                 except json.JSONDecodeError:
                     error_message = "Error: Invalid JSON file."
@@ -89,9 +59,6 @@ def import_accounts(request):
         else:
             error_message = "Error: No file provided."
             return render(request, 'import_accounts.html', {'error_message': error_message})
-    else:
-        error_message = "Error: No file provided."
-        return render(request, 'import_accounts.html', {'error_message': error_message})
 
 @api_view(['GET'])
 def account_list(request):
