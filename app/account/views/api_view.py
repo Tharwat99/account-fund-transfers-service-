@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from ..models import Account
 from ..serializers import AccountSerializer, ImportAccountsSerializer, TransferFundsSerializer
 from ..paginations import ListAccountsPagination
+from ..utils.web_view_utils import handle_csv_file, handle_xls_file, handle_json_file
 
 class ImportAccountsView(generics.GenericAPIView):
     serializer_class = ImportAccountsSerializer
@@ -14,23 +15,36 @@ class ImportAccountsView(generics.GenericAPIView):
 
         if serializer.is_valid():
             accounts_file = serializer.validated_data['accounts_file']
-
-            try:
-                reader = csv.DictReader(accounts_file.read().decode('utf-8').splitlines())
-                accounts = []
-            
-                # Process each row in the CSV file
-                for row in reader:
-                    # Create an Account object from each row
-                    account = Account(id=row['ID'], name=row['Name'], balance=float(row['Balance']))
-                    accounts.append(account)
-                try:    
+            if accounts_file.name.endswith('.csv'):
+                try:
+                    accounts, inserted_records, exists_records = handle_csv_file(accounts_file)
                     Account.objects.bulk_create(accounts)
-                except IntegrityError as e:
-                    return Response({'error': 'some records already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-                return Response({'message': 'Accounts imported successfully'}, status=status.HTTP_201_CREATED)
-            except Exception as e:
-                return Response({'error': 'Error processing the file'}, status=status.HTTP_400_BAD_REQUEST)
+                    success_message = f"{inserted_records} records inserted successfully {exists_records} exists failed."
+                    return Response({'message': success_message}, status=status.HTTP_201_CREATED)
+                except Exception as e:
+                    error_message = "Error: Error processing the file."
+                    return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
+            elif accounts_file.name.endswith('.xls') or accounts_file.name.endswith('.xlsx'):
+                try:
+                    accounts, inserted_records, exists_records = handle_xls_file(accounts_file)
+                    Account.objects.bulk_create(accounts)
+                    success_message = f"{inserted_records} records inserted successfully {exists_records} exists failed."
+                    return Response({'message': success_message}, status=status.HTTP_201_CREATED)
+                except Exception as e:
+                    error_message = "Error: Error processing the file."
+                    return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
+            elif accounts_file.name.endswith('.json'):
+                try:
+                    accounts, inserted_records, exists_records = handle_json_file(accounts_file)
+                    Account.objects.bulk_create(accounts)
+                    success_message = f"{inserted_records} records inserted successfully {exists_records} exists failed."
+                    return Response({'message': success_message}, status=status.HTTP_201_CREATED)
+                except Exception as e:
+                    error_message = "Error: Error processing the file."
+                    return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                error_message = "Error: Invalid file type. Please upload a CSV, XLS, or JSON file."
+                return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
