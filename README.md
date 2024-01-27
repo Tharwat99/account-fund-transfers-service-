@@ -1,5 +1,5 @@
 # Account-fund-transfers-service-docker
-Small service/app that handles fund transfers between two accounts, and insert accounts records files.
+Small service/app that handles fund transfers between two accounts, and inserts account records files.
 
 
 ## Normal Setup
