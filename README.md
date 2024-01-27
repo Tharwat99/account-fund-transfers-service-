@@ -7,7 +7,7 @@ Small service/app that handles fund transfers between two accounts, and inserts 
 The first thing to do is to clone the repository:
 
 ```sh
-$ git https://github.com/Tharwat99/account-fund-transfers-service-.git
+$ git clone https://github.com/Tharwat99/account-fund-transfers-service-.git
 $ cd account-fund-transfers-service-
 ```
 
